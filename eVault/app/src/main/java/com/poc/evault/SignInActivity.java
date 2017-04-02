@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -12,7 +15,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -35,6 +44,8 @@ import java.io.FileOutputStream;
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
+    private ImageView page1, page2, page3, page4;
+    private ImageView indicator1, indicator2, indicator3, indicator4;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 100;
     private static String[] PERMISSIONS_STORAGE = {
@@ -50,12 +61,28 @@ public class SignInActivity extends AppCompatActivity implements
     Image image;
     String fileName = "FirstPdf.pdf";
     String path = Environment.getExternalStorageDirectory() + "/" + fileName;
+    private ImageView imgBackground;
+    private AnimationDrawable animation;
+    private ViewFlipper imageCarouselContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
+        setContentView(R.layout.content_sign_in);
 
+        //imgBackground=(ImageView)findViewById(R.id.image_background);
+        page1 = (ImageView) findViewById(R.id.page1);
+        page2 = (ImageView) findViewById(R.id.page2);
+        page3 = (ImageView) findViewById(R.id.page3);
+        page4 = (ImageView) findViewById(R.id.page4);
+
+        indicator1 = (ImageView) findViewById(R.id.dot1);
+        indicator2 = (ImageView) findViewById(R.id.dot2);
+        indicator3 = (ImageView) findViewById(R.id.dot3);
+        indicator4 = (ImageView) findViewById(R.id.dot4);
+
+        imageCarouselContainer = (ViewFlipper) findViewById(R.id.imageCarouselContainer);
+        imageCarouselContainer.addOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
         /*int readPermissionCheck = ContextCompat.checkSelfPermission(this,
                 PERMISSIONS_STORAGE[0]);
         int writePermissionCheck = ContextCompat.checkSelfPermission(this,
@@ -89,13 +116,44 @@ public class SignInActivity extends AppCompatActivity implements
                 .build();
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);*/
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        imageCarouselContainer.setInAnimation(inFromRightAnimation());
+        imageCarouselContainer.setOutAnimation(outToLeftAnimation());
+        imageCarouselContainer.startFlipping();
+      /*  imgBackground.setImageResource(R.drawable.background);
+        animation = (AnimationDrawable) imgBackground.getDrawable();
+        imgBackground.post(new Runnable() {
+            @Override
+            public void run() {
+                animation.start();
+            }
+        });
+
+        Animation animation1=new TranslateAnimation(0.0f, 200.0f, 0.0f, 0.0f);
+        animation1.setDuration(1500);
+        imgBackground.startAnimation(animation1);*/
+    }
+
+    @Override
+    protected void onPause() {
+        imageCarouselContainer.stopFlipping();
+      /*  animation.stop();
+        imgBackground.setImageDrawable(null);
+        recycleMemoryForAnimation(animation);*/
+        super.onPause();
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+      /*  OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
             // and the GoogleSignInResult will be available instantly.
@@ -114,7 +172,7 @@ public class SignInActivity extends AppCompatActivity implements
                     handleSignInResult(googleSignInResult);
                 }
             });
-        }
+        }*/
     }
 
     // [START onActivityResult]
@@ -293,5 +351,81 @@ public class SignInActivity extends AppCompatActivity implements
 
         addImage(document);
         document.close();
+    }
+
+    private void recycleMemoryForAnimation(AnimationDrawable anim) {
+        if (anim != null) {
+            anim.stop();
+            for (int i = 0; i < anim.getNumberOfFrames(); ++i) {
+                Drawable frame = anim.getFrame(i);
+                if (frame != null && frame instanceof BitmapDrawable) {
+                    Bitmap bitmap = ((BitmapDrawable) frame).getBitmap();
+                    if (bitmap != null && !bitmap.isRecycled()) {
+                        //bitmap.recycle();
+                        bitmap = null;
+                        System.gc();
+                    }
+                }
+                frame.setCallback(null);
+            }
+            anim.setCallback(null);
+        }
+    }
+
+    private Animation inFromRightAnimation() {
+
+        Animation inFromRight = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, +1.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f
+        );
+        inFromRight.setDuration(1000);
+        inFromRight.setInterpolator(new AccelerateInterpolator());
+        return inFromRight;
+    }
+
+    private Animation outToLeftAnimation() {
+        Animation outtoLeft = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, -1.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f
+        );
+        outtoLeft.setDuration(1000);
+        outtoLeft.setInterpolator(new AccelerateInterpolator());
+        return outtoLeft;
+    }
+
+    View.OnLayoutChangeListener onLayoutChangeListener_viewFlipper = new View.OnLayoutChangeListener() {
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+
+            if (imageCarouselContainer.getCurrentView() == page1) {
+                indicator1.setImageResource(R.drawable.page_selected_indicator);
+                indicator2.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator3.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator4.setImageResource(R.drawable.page_nonselected_indicator);
+            } else if (imageCarouselContainer.getCurrentView() == page2) {
+                indicator1.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator2.setImageResource(R.drawable.page_selected_indicator);
+                indicator3.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator4.setImageResource(R.drawable.page_nonselected_indicator);
+            } else if (imageCarouselContainer.getCurrentView() == page3) {
+                indicator1.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator2.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator3.setImageResource(R.drawable.page_selected_indicator);
+                indicator4.setImageResource(R.drawable.page_nonselected_indicator);
+            } else if (imageCarouselContainer.getCurrentView() == page4) {
+                indicator1.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator2.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator3.setImageResource(R.drawable.page_nonselected_indicator);
+                indicator4.setImageResource(R.drawable.page_selected_indicator);
+            }
+
+
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        imageCarouselContainer.removeOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
     }
 }
