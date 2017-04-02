@@ -1,4 +1,4 @@
-package com.poc.evault;
+package com.poc.evault.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -10,38 +10,34 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.poc.evault.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 
-public class SignInActivity extends AppCompatActivity implements
+public class SplashActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
     private ImageView page1, page2, page3, page4;
@@ -68,7 +64,7 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_sign_in);
+        setContentView(R.layout.activity_splash);
 
         //imgBackground=(ImageView)findViewById(R.id.image_background);
         page1 = (ImageView) findViewById(R.id.page1);
@@ -83,6 +79,15 @@ public class SignInActivity extends AppCompatActivity implements
 
         imageCarouselContainer = (ViewFlipper) findViewById(R.id.imageCarouselContainer);
         imageCarouselContainer.addOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
+
+
+        Button btnSignup=(Button)findViewById(R.id.signup);
+        btnSignup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(SplashActivity.this,SignupActivity.class));
+            }
+        });
         /*int readPermissionCheck = ContextCompat.checkSelfPermission(this,
                 PERMISSIONS_STORAGE[0]);
         int writePermissionCheck = ContextCompat.checkSelfPermission(this,

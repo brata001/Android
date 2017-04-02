@@ -1,0 +1,88 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sign_up_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/default_background">
+
+    <LinearLayout
+        android:id="@+id/title"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:background="@mipmap/app_icon"/>
+
+        <TextView
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@+id/app_icon"
+            android:text="Signup"
+            android:textSize="35sp"
+            android:textColor="#000000"
+            android:gravity="left|center"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        android:layout_below="@+id/title"
+        android:layout_marginTop="50dp">
+     <EditText
+         android:id="@+id/email"
+         android:layout_width="match_parent"
+         android:hint="Email"
+         android:padding="8dp"
+         android:layout_height="50dp"
+         android:layout_marginBottom="10dp"
+         android:textCursorDrawable="@null"
+         android:imeOptions="actionNext"
+         android:singleLine="true"
+         android:inputType="textEmailAddress"
+         android:background="@mipmap/edittext_background"/>
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:hint="Password"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:padding="8dp"
+            android:textCursorDrawable="@null"
+            android:imeOptions="actionNext"
+            android:singleLine="true"
+            android:password="true"
+            android:background="@mipmap/edittext_background"/>
+        <EditText
+            android:id="@+id/confirm_password"
+            android:layout_width="match_parent"
+            android:hint="Confirm Password"
+            android:padding="8dp"
+            android:layout_height="50dp"
+            android:singleLine="true"
+            android:textCursorDrawable="@null"
+            android:imeOptions="actionDone"
+            android:password="true"
+            android:background="@mipmap/edittext_background"/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/signup"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/button_border"
+        android:text="Submit"
+        android:layout_alignParentBottom="true"
+        android:textAllCaps="false"
+        android:textSize="18sp"
+        android:textColor="#000000"/>
+</RelativeLayout>
