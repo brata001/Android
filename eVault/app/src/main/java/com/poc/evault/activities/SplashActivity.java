@@ -5,11 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,16 +16,23 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
@@ -57,16 +62,20 @@ public class SplashActivity extends AppCompatActivity implements
     Image image;
     String fileName = "FirstPdf.pdf";
     String path = Environment.getExternalStorageDirectory() + "/" + fileName;
-    private ImageView imgBackground;
-    private AnimationDrawable animation;
     private ViewFlipper imageCarouselContainer;
+    private BottomSheetBehavior mBottomSheetBehavior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        //imgBackground=(ImageView)findViewById(R.id.image_background);
+        View bottomSheet = findViewById(R.id.bottom_sheet);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+
+        TextView txtLogin=(TextView)findViewById(R.id.already_have_an_account_label);
+        txtLogin.setOnClickListener(this);
+
         page1 = (ImageView) findViewById(R.id.page1);
         page2 = (ImageView) findViewById(R.id.page2);
         page3 = (ImageView) findViewById(R.id.page3);
@@ -80,14 +89,30 @@ public class SplashActivity extends AppCompatActivity implements
         imageCarouselContainer = (ViewFlipper) findViewById(R.id.imageCarouselContainer);
         imageCarouselContainer.addOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
 
-
         Button btnSignup=(Button)findViewById(R.id.signup);
-        btnSignup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(SplashActivity.this,SignupActivity.class));
-            }
-        });
+        btnSignup.setOnClickListener(this);
+
+        LinearLayout btnGoogleLogin=(LinearLayout)findViewById(R.id.google_login);
+        LinearLayout btnFacebookLogin=(LinearLayout)findViewById(R.id.facebook_login);
+        LinearLayout btnEVaultLogin=(LinearLayout)findViewById(R.id.evault_login);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                //.requestScopes(new Scope(Scopes.PROFILE))
+                //.requestScopes(new Scope(Scopes.PLUS_LOGIN))
+                .requestProfile()
+                .build();
+
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this )
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                //.addApi(Plus.API)
+                .build();
+        btnGoogleLogin.setOnClickListener(this);
+        btnFacebookLogin.setOnClickListener(this);
+        btnEVaultLogin.setOnClickListener(this);
+
         /*int readPermissionCheck = ContextCompat.checkSelfPermission(this,
                 PERMISSIONS_STORAGE[0]);
         int writePermissionCheck = ContextCompat.checkSelfPermission(this,
@@ -104,23 +129,7 @@ public class SplashActivity extends AppCompatActivity implements
             }
         }
 
-        mStatusTextView = (TextView) findViewById(R.id.status);
-
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this )
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
-        signInButton.setSize(SignInButton.SIZE_STANDARD);*/
+    */
 
 
     }
@@ -131,26 +140,11 @@ public class SplashActivity extends AppCompatActivity implements
         imageCarouselContainer.setInAnimation(inFromRightAnimation());
         imageCarouselContainer.setOutAnimation(outToLeftAnimation());
         imageCarouselContainer.startFlipping();
-      /*  imgBackground.setImageResource(R.drawable.background);
-        animation = (AnimationDrawable) imgBackground.getDrawable();
-        imgBackground.post(new Runnable() {
-            @Override
-            public void run() {
-                animation.start();
-            }
-        });
-
-        Animation animation1=new TranslateAnimation(0.0f, 200.0f, 0.0f, 0.0f);
-        animation1.setDuration(1500);
-        imgBackground.startAnimation(animation1);*/
     }
 
     @Override
     protected void onPause() {
         imageCarouselContainer.stopFlipping();
-      /*  animation.stop();
-        imgBackground.setImageDrawable(null);
-        recycleMemoryForAnimation(animation);*/
         super.onPause();
     }
 
@@ -158,17 +152,11 @@ public class SplashActivity extends AppCompatActivity implements
     public void onStart() {
         super.onStart();
 
-      /*  OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
-            // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
-            // and the GoogleSignInResult will be available instantly.
-            Log.d(TAG, "Got cached sign-in");
             GoogleSignInResult result = opr.get();
             handleSignInResult(result);
         } else {
-            // If the user has not previously signed in on this device or the sign-in has expired,
-            // this asynchronous branch will attempt to sign in the user silently.  Cross-device
-            // single sign-on will occur in this branch.
             showProgressDialog();
             opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
                 @Override
@@ -177,76 +165,58 @@ public class SplashActivity extends AppCompatActivity implements
                     handleSignInResult(googleSignInResult);
                 }
             });
-        }*/
+        }
     }
 
-    // [START onActivityResult]
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
     }
-    // [END onActivityResult]
 
-    // [START handleSignInResult]
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
-            mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
-            updateUI(true);
+            Intent intent=new Intent(SplashActivity.this, HomeActivity.class);
+            intent.putExtra("URL",acct.getPhotoUrl().toString());
+            intent.putExtra("NAME",acct.getDisplayName());
+            intent.putExtra("EMAIL",acct.getEmail());
+            startActivity(intent);
+            finish();
         } else {
-            // Signed out, show unauthenticated UI.
-            updateUI(false);
         }
     }
-    // [END handleSignInResult]
 
-    // [START signIn]
     private void signIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
-    // [END signIn]
 
-    // [START signOut]
+
     private void signOut() {
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        // [START_EXCLUDE]
-                        updateUI(false);
-                        // [END_EXCLUDE]
                     }
                 });
     }
-    // [END signOut]
 
-    // [START revokeAccess]
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        // [START_EXCLUDE]
-                        updateUI(false);
-                        // [END_EXCLUDE]
                     }
                 });
     }
-    // [END revokeAccess]
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-        // be available.
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
 
@@ -266,29 +236,24 @@ public class SplashActivity extends AppCompatActivity implements
         }
     }
 
-    private void updateUI(boolean signedIn) {
-        if (signedIn) {
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-        } else {
-            mStatusTextView.setText(R.string.signed_out);
-
-            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
-        }
-    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.sign_in_button:
+            case R.id.signup:
+                startActivity(new Intent(SplashActivity.this, SignupActivity.class));
+                break;
+            case R.id.already_have_an_account_label:
+                if(mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+                break;
+            case R.id.google_login:
                 signIn();
                 break;
-            case R.id.sign_out_button:
-                signOut();
+            case R.id.evault_login:
+                startActivity(new Intent(SplashActivity.this, SigninActivity.class));
                 break;
-            case R.id.disconnect_button:
-                revokeAccess();
+            case R.id.facebook_login:
                 break;
         }
     }
@@ -358,27 +323,7 @@ public class SplashActivity extends AppCompatActivity implements
         document.close();
     }
 
-    private void recycleMemoryForAnimation(AnimationDrawable anim) {
-        if (anim != null) {
-            anim.stop();
-            for (int i = 0; i < anim.getNumberOfFrames(); ++i) {
-                Drawable frame = anim.getFrame(i);
-                if (frame != null && frame instanceof BitmapDrawable) {
-                    Bitmap bitmap = ((BitmapDrawable) frame).getBitmap();
-                    if (bitmap != null && !bitmap.isRecycled()) {
-                        //bitmap.recycle();
-                        bitmap = null;
-                        System.gc();
-                    }
-                }
-                frame.setCallback(null);
-            }
-            anim.setCallback(null);
-        }
-    }
-
     private Animation inFromRightAnimation() {
-
         Animation inFromRight = new TranslateAnimation(
                 Animation.RELATIVE_TO_PARENT, +1.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
                 Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f
@@ -401,7 +346,6 @@ public class SplashActivity extends AppCompatActivity implements
     View.OnLayoutChangeListener onLayoutChangeListener_viewFlipper = new View.OnLayoutChangeListener() {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-
             if (imageCarouselContainer.getCurrentView() == page1) {
                 indicator1.setImageResource(R.drawable.page_selected_indicator);
                 indicator2.setImageResource(R.drawable.page_nonselected_indicator);
@@ -423,8 +367,6 @@ public class SplashActivity extends AppCompatActivity implements
                 indicator3.setImageResource(R.drawable.page_nonselected_indicator);
                 indicator4.setImageResource(R.drawable.page_selected_indicator);
             }
-
-
         }
     };
 
@@ -432,5 +374,14 @@ public class SplashActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         imageCarouselContainer.removeOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }else{
+            super.onBackPressed();
+        }
     }
 }

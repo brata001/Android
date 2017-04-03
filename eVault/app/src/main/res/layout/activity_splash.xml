@@ -1,92 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/signin_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ViewFlipper
-        android:id="@+id/imageCarouselContainer"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/signin_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:flipInterval="3000"
-        android:orientation="vertical">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <ImageView
-            android:id="@+id/page1"
+        <ViewFlipper
+            android:id="@+id/imageCarouselContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@mipmap/bg1" />
+            android:flipInterval="3000"
+            android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/page2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@mipmap/bg2" />
+            <ImageView
+                android:id="@+id/page1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@mipmap/bg1" />
 
-        <ImageView
-            android:id="@+id/page3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@mipmap/bg3" />
+            <ImageView
+                android:id="@+id/page2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@mipmap/bg2" />
 
-        <ImageView
-            android:id="@+id/page4"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@mipmap/bg4" />
-    </ViewFlipper>
+            <ImageView
+                android:id="@+id/page3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@mipmap/bg3" />
+
+            <ImageView
+                android:id="@+id/page4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@mipmap/bg4" />
+        </ViewFlipper>
 
 
+        <TextView
+            android:id="@+id/already_have_an_account_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="30dp"
+            android:text="@string/already_have_an_account"
+            android:textColor="#000000" />
 
-    <TextView
-        android:id="@+id/already_have_an_account_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="30dp"
-        android:text="@string/already_have_an_account"
-        android:textColor="#000000" />
+        <Button
+            android:id="@+id/signup"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/already_have_an_account_label"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/button_border"
+            android:text="Sign Up"
+            android:textAllCaps="false"
+            android:textColor="#000000"
+            android:textSize="18sp" />
 
-    <Button
-        android:id="@+id/signup"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/already_have_an_account_label"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp"
-        android:background="@drawable/button_border"
-        android:text="Sign Up"
-        android:textAllCaps="false"
-        android:textColor="#000000"
-        android:textSize="18sp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/signup"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp">
 
+            <ImageView
+                android:id="@+id/dot1"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginRight="5dp" />
+
+            <ImageView
+                android:id="@+id/dot2"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginRight="5dp" />
+
+            <ImageView
+                android:id="@+id/dot3"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginRight="5dp" />
+
+            <ImageView
+                android:id="@+id/dot4"
+                android:layout_width="12dp"
+                android:layout_height="12dp" />
+        </LinearLayout>
+
+
+    </RelativeLayout>
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/signup"
-        android:layout_marginBottom="20dp">
-        <ImageView
-            android:id="@+id/dot1"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginRight="5dp"/>
-        <ImageView
-            android:id="@+id/dot2"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginRight="5dp"/>
-        <ImageView
-            android:id="@+id/dot3"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginRight="5dp"/>
-        <ImageView
-            android:id="@+id/dot4"
-            android:layout_width="12dp"
-            android:layout_height="12dp" />
+        android:id="@+id/bottom_sheet"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@mipmap/default_background"
+        android:orientation="horizontal"
+        app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+        <LinearLayout
+            android:id="@+id/google_login"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="@drawable/button_border"
+            android:orientation="horizontal"
+            android:layout_margin="10dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@mipmap/googleg_color" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="left|center"
+                android:textColor="#000000"
+                android:text="Sign In" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/facebook_login"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="@drawable/button_border"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@mipmap/facebook_icon" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="left|center"
+                android:textColor="#000000"
+                android:text="Sign In" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/evault_login"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="@drawable/button_border"
+            android:orientation="horizontal"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="10dp"
+            android:layout_weight="1"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@mipmap/app_icon" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="left|center"
+                android:textColor="#000000"
+                android:text="Sign In" />
+
+        </LinearLayout>
+
     </LinearLayout>
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
