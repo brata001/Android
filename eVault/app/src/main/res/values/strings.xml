@@ -13,6 +13,6 @@
     <string name="item_upload_date">Upload Date: %1$s</string>
     <string name="item_size">Size: %1$s</string>
     <string name="view">View</string>
-    <string name="download">Downlaod</string>
+    <string name="download">Download</string>
     <string name="delete">Delete</string>
 </resources>

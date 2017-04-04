@@ -29,6 +29,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -55,9 +56,16 @@ import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -90,6 +98,8 @@ public class HomeActivity extends AppCompatActivity implements
     private Dialog dialog;
     private boolean isAuthenticationRequired = true;
     private static final int PERMISSIONS_REQUEST = 100;
+    private String SERVER_BASE_URL = "http://192.168.2.35/TDLockerServer/";
+    private String SERVER_URL = SERVER_BASE_URL+"server.php";
     private static String[] PERMISSIONS_STORAGE = {
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -131,15 +141,15 @@ public class HomeActivity extends AppCompatActivity implements
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(40));
 
-        listItem=new ArrayList<>();
-        Item item=new Item();
+        listItem = new ArrayList<>();
+        Item item = new Item();
         item.setId("1");
         item.setName("ABC.pdf");
         item.setUploadDate("April 4 2017");
         item.setSize("0.10MB");
         item.setType("pdf");
         listItem.add(item);
-        item=new Item();
+        item = new Item();
         item.setId("2");
         item.setName("AAAA.doc");
         item.setUploadDate("April 5 2017");
@@ -439,7 +449,7 @@ public class HomeActivity extends AppCompatActivity implements
         }
     }
 
-    private void uploadImage(Bitmap bitmap, String filePath) throws Exception {
+    private void uploadImage(Bitmap bitmap, final String filePath) throws Exception {
         Document document = null;
         try {
             document = new Document(PageSize.A4);
@@ -452,6 +462,18 @@ public class HomeActivity extends AppCompatActivity implements
             image.scaleAbsolute(PageSize.A4.getWidth(), PageSize.A4.getHeight());
             image.setAbsolutePosition(0, 0);
             document.add(image);
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    try {
+                        uploadFile(filePath);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    return null;
+                }
+            }.execute();
         } catch (Exception e) {
             throw e;
         } finally {
@@ -464,5 +486,77 @@ public class HomeActivity extends AppCompatActivity implements
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
+    public int uploadFile(final String selectedFilePath) throws Exception {
+
+        int serverResponseCode = 0;
+
+        HttpURLConnection connection;
+        DataOutputStream dataOutputStream = null;
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "*****";
+        FileInputStream fileInputStream = null;
+
+        int bytesRead, bytesAvailable, bufferSize;
+        byte[] buffer;
+        int maxBufferSize = 1 * 1024 * 1024;
+        File selectedFile = new File(selectedFilePath);
+
+
+        String[] parts = selectedFilePath.split("/");
+
+            try {
+                fileInputStream = new FileInputStream(selectedFile);
+                URL url = new URL(SERVER_URL);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);//Allow Inputs
+                connection.setDoOutput(true);//Allow Outputs
+                connection.setUseCaches(false);//Don't use a cached Copy
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Connection", "Keep-Alive");
+                connection.setRequestProperty("ENCTYPE", "multipart/form-data");
+                connection.setRequestProperty(
+                        "Content-Type", "multipart/form-data;boundary=" + boundary);
+                connection.setRequestProperty("uploaded_file", selectedFilePath);
+
+                dataOutputStream = new DataOutputStream(connection.getOutputStream());
+
+                dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
+                dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
+                        + selectedFilePath + "\"" + lineEnd);
+
+                dataOutputStream.writeBytes(lineEnd);
+
+                bytesAvailable = fileInputStream.available();
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                buffer = new byte[bufferSize];
+
+                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0) {
+                    dataOutputStream.write(buffer, 0, bufferSize);
+                    bytesAvailable = fileInputStream.available();
+                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                }
+
+                dataOutputStream.writeBytes(lineEnd);
+                dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+                serverResponseCode = connection.getResponseCode();
+
+            } catch (Exception e) {
+                throw e;
+            } finally {
+                fileInputStream.close();
+                dataOutputStream.flush();
+                dataOutputStream.close();
+            }
+
+            //dialog.dismiss();
+            return serverResponseCode;
+
     }
 }
