@@ -9,4 +9,10 @@
     <string name="title_text">Google Sign-In\nQuickstart</string>
     <string name="desc_google_icon">Google Logo</string>
     <string name="already_have_an_account">Already have an account?  <b>  Login</b></string>
+    <string name="item_name">Name: %1$s</string>
+    <string name="item_upload_date">Upload Date: %1$s</string>
+    <string name="item_size">Size: %1$s</string>
+    <string name="view">View</string>
+    <string name="download">Downlaod</string>
+    <string name="delete">Delete</string>
 </resources>

@@ -27,6 +27,8 @@ import android.security.keystore.KeyProperties;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -46,6 +48,9 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.poc.evault.R;
+import com.poc.evault.adapters.DocListAdapter;
+import com.poc.evault.adapters.SpacesItemDecoration;
+import com.poc.evault.model.Item;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
@@ -61,6 +66,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -90,6 +97,10 @@ public class HomeActivity extends AppCompatActivity implements
     };
     private String PATH = Environment.getExternalStorageDirectory() + "/";
     private String EXTENSION = ".pdf";
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private List<Item> listItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +117,7 @@ public class HomeActivity extends AppCompatActivity implements
             photoUrl = bundle.getString("URL");
         }
 
+        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         ImageView imgAdd = (ImageView) findViewById(R.id.fab);
         ImageView imgLogout = (ImageView) findViewById(R.id.logout);
         TextView txtName = (TextView) findViewById(R.id.name);
@@ -114,6 +126,28 @@ public class HomeActivity extends AppCompatActivity implements
         txtEmail.setText(email);
         CircleImageView imgUserPhoto = (CircleImageView) findViewById(R.id.user_photo);
 
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.addItemDecoration(new SpacesItemDecoration(40));
+
+        listItem=new ArrayList<>();
+        Item item=new Item();
+        item.setId("1");
+        item.setName("ABC.pdf");
+        item.setUploadDate("April 4 2017");
+        item.setSize("0.10MB");
+        item.setType("pdf");
+        listItem.add(item);
+        item=new Item();
+        item.setId("2");
+        item.setName("AAAA.doc");
+        item.setUploadDate("April 5 2017");
+        item.setSize("0.20MB");
+        item.setType("doc");
+        listItem.add(item);
+
+        mRecyclerView.setAdapter(new DocListAdapter(listItem, this));
         DownloadImageTask task = new DownloadImageTask(imgUserPhoto);
         task.execute(photoUrl);
 
