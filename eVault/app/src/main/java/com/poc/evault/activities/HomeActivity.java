@@ -11,18 +11,19 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.fingerprint.FingerprintManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Environment;
 import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -30,8 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,11 +41,16 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.poc.evault.R;
-import com.poc.evault.utils.SharedPreferenceUtil;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
@@ -84,6 +88,8 @@ public class HomeActivity extends AppCompatActivity implements
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA
     };
+    private String PATH = Environment.getExternalStorageDirectory() + "/";
+    private String EXTENSION = ".pdf";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,16 +122,14 @@ public class HomeActivity extends AppCompatActivity implements
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                        //.requestScopes(new Scope(Scopes.PROFILE))
-                        //.requestScopes(new Scope(Scopes.PLUS_LOGIN))
                 .requestProfile()
                 .build();
-
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
         generateKey();
         cipherInit();
     }
@@ -355,11 +359,13 @@ public class HomeActivity extends AppCompatActivity implements
             Bitmap bitmap = null;
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                getContentResolver().delete(uri, null, null);
-                //addImage(bitmap, "D1"+String.valueOf(System.currentTimeMillis())+".pdf");
-                //scannedImageView.setImageBitmap(bitmap);
+                String filePath = PATH + "File" + System.currentTimeMillis() + EXTENSION;
+                uploadImage(rotateBitmap(bitmap, 90), filePath);
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                getContentResolver().delete(uri, null, null);
+                bitmap.recycle();
             }
         }
     }
@@ -386,24 +392,43 @@ public class HomeActivity extends AppCompatActivity implements
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PERMISSIONS_REQUEST: {
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED &&
                         grantResults[2] == PackageManager.PERMISSION_GRANTED) {
 
                     initFingerprint();
-                    showDialog();
-
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
+    }
+
+    private void uploadImage(Bitmap bitmap, String filePath) throws Exception {
+        Document document = null;
+        try {
+            document = new Document(PageSize.A4);
+            ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, new FileOutputStream(filePath));
+            document.open();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0, bytearrayoutputstream);
+            byte[] bArray = bytearrayoutputstream.toByteArray();
+            Image image = Image.getInstance(bArray);
+            image.scaleAbsolute(PageSize.A4.getWidth(), PageSize.A4.getHeight());
+            image.setAbsolutePosition(0, 0);
+            document.add(image);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            document.close();
+            bitmap.recycle();
+        }
+    }
+
+    public static Bitmap rotateBitmap(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 }

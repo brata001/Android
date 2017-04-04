@@ -2,11 +2,7 @@ package com.poc.evault.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,45 +21,20 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.PdfWriter;
 import com.poc.evault.R;
-import com.scanlibrary.ScanActivity;
-import com.scanlibrary.ScanConstants;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 
 public class SplashActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
     private ImageView page1, page2, page3, page4;
     private ImageView indicator1, indicator2, indicator3, indicator4;
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 100;
-    private static String[] PERMISSIONS_STORAGE = {
-            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
-    private static String FILE = "mnt/sdcard/FirstPdf.pdf";
     private GoogleApiClient mGoogleApiClient;
-    private TextView mStatusTextView;
     private ProgressDialog mProgressDialog;
-    Image image;
-    String fileName = "FirstPdf.pdf";
-    String path = Environment.getExternalStorageDirectory() + "/" + fileName;
     private ViewFlipper imageCarouselContainer;
     private BottomSheetBehavior mBottomSheetBehavior;
 
@@ -100,39 +71,16 @@ public class SplashActivity extends AppCompatActivity implements
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                //.requestScopes(new Scope(Scopes.PROFILE))
-                //.requestScopes(new Scope(Scopes.PLUS_LOGIN))
                 .requestProfile()
                 .build();
-
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this )
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                //.addApi(Plus.API)
                 .build();
         btnGoogleLogin.setOnClickListener(this);
         btnFacebookLogin.setOnClickListener(this);
         btnEVaultLogin.setOnClickListener(this);
-
-        /*int readPermissionCheck = ContextCompat.checkSelfPermission(this,
-                PERMISSIONS_STORAGE[0]);
-        int writePermissionCheck = ContextCompat.checkSelfPermission(this,
-                PERMISSIONS_STORAGE[1]);
-        if (readPermissionCheck != PackageManager.PERMISSION_GRANTED && writePermissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{PERMISSIONS_STORAGE[0], PERMISSIONS_STORAGE[1]},
-                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-        } else {
-            try {
-                initializePDFWriter();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-    */
-
 
     }
 
@@ -241,71 +189,6 @@ public class SplashActivity extends AppCompatActivity implements
         }
     }
 
-    private void addImage(Document document) {
-
-        try {
-
-            ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
-
-            Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.mipmap.ic_launcher);
-            icon.compress(Bitmap.CompressFormat.JPEG, 70, bytearrayoutputstream);
-
-            byte[] bArray = bytearrayoutputstream.toByteArray();
-
-            image = Image.getInstance(bArray);  ///Here i set byte array..you can do bitmap to byte array and set in image...
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        // image.scaleAbsolute(150f, 150f);
-        try {
-            document.add(image);
-        } catch (DocumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    try {
-                        initializePDFWriter();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
-
-    private void initializePDFWriter() throws Exception {
-        Document document = new Document();
-
-        PdfWriter.getInstance(document, new FileOutputStream(path));
-        document.open();
-
-        addImage(document);
-        document.close();
-    }
-
     private Animation inFromRightAnimation() {
         Animation inFromRight = new TranslateAnimation(
                 Animation.RELATIVE_TO_PARENT, +1.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
@@ -367,6 +250,4 @@ public class SplashActivity extends AppCompatActivity implements
             super.onBackPressed();
         }
     }
-
-
 }
