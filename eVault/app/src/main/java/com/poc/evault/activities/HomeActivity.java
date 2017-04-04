@@ -2,6 +2,7 @@ package com.poc.evault.activities;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -11,11 +12,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.fingerprint.FingerprintManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
@@ -41,6 +44,8 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.poc.evault.R;
 import com.poc.evault.utils.SharedPreferenceUtil;
+import com.scanlibrary.ScanActivity;
+import com.scanlibrary.ScanConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +71,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 @TargetApi(Build.VERSION_CODES.M)
 public class HomeActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+    private static final int REQUEST_CODE = 99;
     private GoogleApiClient mGoogleApiClient;
     private KeyStore keyStore;
     private static final String KEY_NAME = "androidHive";
@@ -228,7 +234,7 @@ public class HomeActivity extends AppCompatActivity implements
             if (isAuthenticationRequired) {
                 dialog.dismiss();
                 isAuthenticationRequired = false;
-
+                startScan(ScanConstants.OPEN_CAMERA);
             }
         }
 
@@ -328,5 +334,28 @@ public class HomeActivity extends AppCompatActivity implements
     public void onBackPressed() {
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onBackPressed();
+    }
+
+    private void startScan(int preference) {
+        Intent intent = new Intent(this, ScanActivity.class);
+        intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, preference);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                getContentResolver().delete(uri, null, null);
+                //addImage(bitmap, "D1"+String.valueOf(System.currentTimeMillis())+".pdf");
+                //scannedImageView.setImageBitmap(bitmap);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
