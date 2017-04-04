@@ -78,6 +78,12 @@ public class HomeActivity extends AppCompatActivity implements
     private Cipher cipher;
     private Dialog dialog;
     private boolean isAuthenticationRequired = true;
+    private static final int PERMISSIONS_REQUEST = 100;
+    private static String[] PERMISSIONS_STORAGE = {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,8 +134,7 @@ public class HomeActivity extends AppCompatActivity implements
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab:
-                initFingerprint();
-                showDialog();
+                checkPermissions();
                 break;
             case R.id.logout:
                 signOut();
@@ -324,7 +329,7 @@ public class HomeActivity extends AppCompatActivity implements
                 .getChildAt(0).startAnimation(shake);
     }
 
-    private void animateFingerprintDialog(){
+    private void animateFingerprintDialog() {
         startShakeAnimation();
         startVibration();
         Toast.makeText(this, "Try again", Toast.LENGTH_SHORT).show();
@@ -356,6 +361,49 @@ public class HomeActivity extends AppCompatActivity implements
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void checkPermissions() {
+        int readPermissionCheck = ContextCompat.checkSelfPermission(this,
+                PERMISSIONS_STORAGE[0]);
+        int writePermissionCheck = ContextCompat.checkSelfPermission(this,
+                PERMISSIONS_STORAGE[1]);
+        int cameraPermissionCheck = ContextCompat.checkSelfPermission(this,
+                PERMISSIONS_STORAGE[2]);
+        if (readPermissionCheck != PackageManager.PERMISSION_GRANTED && writePermissionCheck != PackageManager.PERMISSION_GRANTED && cameraPermissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{PERMISSIONS_STORAGE[0], PERMISSIONS_STORAGE[1], PERMISSIONS_STORAGE[2]},
+                    PERMISSIONS_REQUEST);
+        } else {
+            initFingerprint();
+            showDialog();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED &&
+                        grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+
+                    initFingerprint();
+                    showDialog();
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
     }
 }
