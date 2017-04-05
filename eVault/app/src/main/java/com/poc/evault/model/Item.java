@@ -4,7 +4,7 @@ package com.poc.evault.model;
  * Created by DASP2 on 4/4/2017.
  */
 public class Item {
-    private String id;
+    private long id;
     private String name;
     private String uploadDate;
     private String size;
@@ -13,7 +13,7 @@ public class Item {
     public Item() {
     }
 
-    public Item(String id, String name, String uploadDate, String size, String type) {
+    public Item(long id, String name, String uploadDate, String size, String type) {
         this.id = id;
         this.name = name;
         this.uploadDate = uploadDate;
@@ -29,11 +29,11 @@ public class Item {
         this.type = type;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 

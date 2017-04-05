@@ -148,14 +148,14 @@ public class HomeActivity extends AppCompatActivity implements
 
         listItem = new ArrayList<>();
         Item item = new Item();
-        item.setId("1");
+        item.setId(1l);
         item.setName("ABC.pdf");
         item.setUploadDate("April 4 2017");
         item.setSize("0.10MB");
         item.setType("pdf");
         listItem.add(item);
         item = new Item();
-        item.setId("2");
+        item.setId(2l);
         item.setName("AAAA.doc");
         item.setUploadDate("April 5 2017");
         item.setSize("0.20MB");
