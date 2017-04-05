@@ -15,4 +15,7 @@
     <string name="view">View</string>
     <string name="download">Download</string>
     <string name="delete">Delete</string>
+    <string name="uploading">Uploading...</string>
+    <string name="downloading">Downloading...</string>
+    <string name="ok">OK</string>
 </resources>

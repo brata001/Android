@@ -70,6 +70,8 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
             imageId=R.mipmap.pdf;
         }else if(item.getType().equalsIgnoreCase("doc")){
             imageId=R.mipmap.doc;
+        }else if(item.getType().equalsIgnoreCase("xls")||item.getType().equalsIgnoreCase("xlsx")){
+            imageId=R.mipmap.excel;
         }else{
             imageId=R.mipmap.ic_launcher;
         }

@@ -3,8 +3,10 @@ package com.poc.evault.activities;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.KeyguardManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,6 +36,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,7 +103,8 @@ public class HomeActivity extends AppCompatActivity implements
     private boolean isAuthenticationRequired = true;
     private static final int PERMISSIONS_REQUEST = 100;
     private String SERVER_BASE_URL = "http://192.168.2.35/TDLockerServer/";
-    private String SERVER_URL = SERVER_BASE_URL+"server.php";
+    private String SERVER_URL = SERVER_BASE_URL + "server.php";
+    private ProgressDialog mProgressDialog;
     private static String[] PERMISSIONS_STORAGE = {
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -155,6 +160,13 @@ public class HomeActivity extends AppCompatActivity implements
         item.setUploadDate("April 5 2017");
         item.setSize("0.20MB");
         item.setType("doc");
+        listItem.add(item);
+        item = new Item();
+        item.setId("3");
+        item.setName("ffdfdsf.xlsx");
+        item.setUploadDate("April 6 2017");
+        item.setSize("1MB");
+        item.setType("xlsx");
         listItem.add(item);
 
         mRecyclerView.setAdapter(new DocListAdapter(listItem, this));
@@ -396,21 +408,51 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
-            Bitmap bitmap = null;
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                String filePath = PATH + "File" + System.currentTimeMillis() + EXTENSION;
-                uploadImage(rotateBitmap(bitmap, 90), filePath);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                getContentResolver().delete(uri, null, null);
-                bitmap.recycle();
-            }
+            final Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
+            dialog = new Dialog(this);
+            dialog.setContentView(R.layout.dialog_file_name);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+
+            final EditText edtFilename = (EditText) dialog.findViewById(R.id.name_field);
+            Button btnOk = (Button) dialog.findViewById(R.id.submit);
+            btnOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String name = edtFilename.getText().toString().trim();
+                    if (name.equals("")) {
+                        edtFilename.setError("Please enter valid name");
+                    } else {
+                        dialog.dismiss();
+                        showProgressDialog(R.string.uploading);
+
+                        Bitmap bitmap = null;
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            String filePath = PATH + name+ EXTENSION;
+                            uploadImage(rotateBitmap(bitmap, 90), filePath);
+                        } catch (Exception e) {
+                            hideProgressDialog();
+                            showMessage("Upload failed", failureClickListener);
+                            e.printStackTrace();
+                        } finally {
+                            getContentResolver().delete(uri, null, null);
+                            if (bitmap != null)
+                                bitmap.recycle();
+                        }
+                    }
+                }
+            });
+
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    getContentResolver().delete(uri, null, null);
+                }
+            });
         }
     }
 
@@ -468,6 +510,7 @@ public class HomeActivity extends AppCompatActivity implements
                     try {
                         uploadFile(filePath);
                     } catch (Exception e) {
+                        showMessage("Upload failed", failureClickListener);
                         e.printStackTrace();
                     }
 
@@ -475,6 +518,7 @@ public class HomeActivity extends AppCompatActivity implements
                 }
             }.execute();
         } catch (Exception e) {
+            showMessage("Upload failed", failureClickListener);
             throw e;
         } finally {
             document.close();
@@ -507,56 +551,113 @@ public class HomeActivity extends AppCompatActivity implements
 
         String[] parts = selectedFilePath.split("/");
 
-            try {
-                fileInputStream = new FileInputStream(selectedFile);
-                URL url = new URL(SERVER_URL);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);//Allow Inputs
-                connection.setDoOutput(true);//Allow Outputs
-                connection.setUseCaches(false);//Don't use a cached Copy
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Connection", "Keep-Alive");
-                connection.setRequestProperty("ENCTYPE", "multipart/form-data");
-                connection.setRequestProperty(
-                        "Content-Type", "multipart/form-data;boundary=" + boundary);
-                connection.setRequestProperty("uploaded_file", selectedFilePath);
+        try {
+            fileInputStream = new FileInputStream(selectedFile);
+            URL url = new URL(SERVER_URL);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);//Allow Inputs
+            connection.setDoOutput(true);//Allow Outputs
+            connection.setUseCaches(false);//Don't use a cached Copy
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Connection", "Keep-Alive");
+            connection.setRequestProperty("ENCTYPE", "multipart/form-data");
+            connection.setRequestProperty(
+                    "Content-Type", "multipart/form-data;boundary=" + boundary);
+            connection.setRequestProperty("uploaded_file", selectedFilePath);
 
-                dataOutputStream = new DataOutputStream(connection.getOutputStream());
+            dataOutputStream = new DataOutputStream(connection.getOutputStream());
 
-                dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
-                        + selectedFilePath + "\"" + lineEnd);
+            dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
+            dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
+                    + selectedFilePath + "\"" + lineEnd);
 
-                dataOutputStream.writeBytes(lineEnd);
+            dataOutputStream.writeBytes(lineEnd);
 
+            bytesAvailable = fileInputStream.available();
+            bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            buffer = new byte[bufferSize];
+
+            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+            while (bytesRead > 0) {
+                dataOutputStream.write(buffer, 0, bufferSize);
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                buffer = new byte[bufferSize];
-
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
-                while (bytesRead > 0) {
-                    dataOutputStream.write(buffer, 0, bufferSize);
-                    bytesAvailable = fileInputStream.available();
-                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-                }
-
-                dataOutputStream.writeBytes(lineEnd);
-                dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
-                serverResponseCode = connection.getResponseCode();
-
-            } catch (Exception e) {
-                throw e;
-            } finally {
-                fileInputStream.close();
-                dataOutputStream.flush();
-                dataOutputStream.close();
             }
 
-            //dialog.dismiss();
-            return serverResponseCode;
+            dataOutputStream.writeBytes(lineEnd);
+            dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+            serverResponseCode = connection.getResponseCode();
+            hideProgressDialog();
+            showMessage("Upload Successful", successClickListener);
+        } catch (Exception e) {
+            hideProgressDialog();
+            showMessage("Upload failed", failureClickListener);
+            throw e;
+        } finally {
+            fileInputStream.close();
+            dataOutputStream.flush();
+            dataOutputStream.close();
+        }
+
+        //dialog.dismiss();
+        return serverResponseCode;
 
     }
+
+    private void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(getString(R.string.loading));
+            mProgressDialog.setIndeterminate(true);
+        }
+
+        mProgressDialog.show();
+    }
+
+    private void showProgressDialog(int text) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(getString(text));
+            mProgressDialog.setIndeterminate(true);
+        }
+
+        mProgressDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.hide();
+        }
+    }
+
+    private void showMessage(final String message, final DialogInterface.OnClickListener onClickListener) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
+                builder.setTitle(message);
+                builder.setPositiveButton(R.string.ok, onClickListener);
+                builder.setCancelable(false);
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
+    }
+
+    private DialogInterface.OnClickListener successClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+
+        }
+    };
+
+    private DialogInterface.OnClickListener failureClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+
+        }
+    };
 }
