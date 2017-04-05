@@ -1,4 +1,6 @@
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/default_background">
@@ -66,11 +68,36 @@
         android:layout_marginBottom="20dp"
         android:layout_below="@+id/sign_up_layout"/>
 </RelativeLayout>
-    <ImageView
+<!--    <ImageView
         android:id="@+id/fab"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@mipmap/add_button" />
+        android:visibility="invisible"
+        android:src="@mipmap/add_button" />-->
+    <com.sa90.materialarcmenu.ArcMenu
+        android:id="@+id/arcMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        app:menu_scr="@mipmap/add"
+        app:menu_color="@color/blue"
+        app:menu_open="arc_left">
+
+
+        <ImageView
+            android:id="@+id/sd_card"
+            android:layout_width="65dp"
+            android:src="@mipmap/sd_card"
+            android:layout_height="70dp" />
+
+        <ImageView
+            android:id="@+id/camera"
+            android:layout_width="65dp"
+            android:src="@mipmap/camera"
+            android:layout_height="70dp" />
+
+
+    </com.sa90.materialarcmenu.ArcMenu>
 </android.support.design.widget.CoordinatorLayout>

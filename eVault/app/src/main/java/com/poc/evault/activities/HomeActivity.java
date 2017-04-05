@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -31,11 +32,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -56,6 +57,8 @@ import com.poc.evault.R;
 import com.poc.evault.adapters.DocListAdapter;
 import com.poc.evault.adapters.SpacesItemDecoration;
 import com.poc.evault.model.Item;
+import com.poc.evault.utils.DocumentDataSource;
+import com.sa90.materialarcmenu.ArcMenu;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
@@ -63,12 +66,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -78,7 +79,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.crypto.Cipher;
@@ -102,7 +106,7 @@ public class HomeActivity extends AppCompatActivity implements
     private Dialog dialog;
     private boolean isAuthenticationRequired = true;
     private static final int PERMISSIONS_REQUEST = 100;
-    private String SERVER_BASE_URL = "http://192.168.2.35/TDLockerServer/";
+    private String SERVER_BASE_URL = "http://49.12.33.176/TDLockerServer/";
     private String SERVER_URL = SERVER_BASE_URL + "server.php";
     private ProgressDialog mProgressDialog;
     private static String[] PERMISSIONS_STORAGE = {
@@ -116,6 +120,8 @@ public class HomeActivity extends AppCompatActivity implements
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private List<Item> listItem;
+    private boolean cameraClicked=false;
+    private ArcMenu arcMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +139,9 @@ public class HomeActivity extends AppCompatActivity implements
         }
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-        ImageView imgAdd = (ImageView) findViewById(R.id.fab);
+        arcMenu=(ArcMenu)findViewById(R.id.arcMenu);
+        ImageView imgCamera= (ImageView) findViewById(R.id.camera);
+        ImageView imgSDCard= (ImageView) findViewById(R.id.sd_card);
         ImageView imgLogout = (ImageView) findViewById(R.id.logout);
         TextView txtName = (TextView) findViewById(R.id.name);
         txtName.setText(name);
@@ -146,8 +154,13 @@ public class HomeActivity extends AppCompatActivity implements
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(40));
 
-        listItem = new ArrayList<>();
-        Item item = new Item();
+       /*  listItem = new ArrayList<>();
+        DocumentDataSource documentDataSource=new DocumentDataSource(this);
+        documentDataSource.open();
+        listItem= documentDataSource.getAllDocuments();
+        documentDataSource.close();*/
+        updateList();
+       /* Item item = new Item();
         item.setId(1l);
         item.setName("ABC.pdf");
         item.setUploadDate("April 4 2017");
@@ -167,13 +180,16 @@ public class HomeActivity extends AppCompatActivity implements
         item.setUploadDate("April 6 2017");
         item.setSize("1MB");
         item.setType("xlsx");
-        listItem.add(item);
+        listItem.add(item);*/
 
-        mRecyclerView.setAdapter(new DocListAdapter(listItem, this));
+        /*if(listItem.size()>0) {
+            mRecyclerView.setAdapter(new DocListAdapter(listItem, this));
+        }*/
         DownloadImageTask task = new DownloadImageTask(imgUserPhoto);
         task.execute(photoUrl);
 
-        imgAdd.setOnClickListener(this);
+        imgCamera.setOnClickListener(this);
+        imgSDCard.setOnClickListener(this);
         imgLogout.setOnClickListener(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -193,7 +209,18 @@ public class HomeActivity extends AppCompatActivity implements
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.fab:
+            case R.id.camera:
+                if(arcMenu.isMenuOpened()){
+                    arcMenu.toggleMenu();
+                }
+                cameraClicked=true;
+                checkPermissions();
+                break;
+            case R.id.sd_card:
+                if(arcMenu.isMenuOpened()){
+                    arcMenu.toggleMenu();
+                }
+                cameraClicked=false;
                 checkPermissions();
                 break;
             case R.id.logout:
@@ -299,7 +326,13 @@ public class HomeActivity extends AppCompatActivity implements
             if (isAuthenticationRequired) {
                 dialog.dismiss();
                 isAuthenticationRequired = false;
-                startScan(ScanConstants.OPEN_CAMERA);
+                if(cameraClicked){
+                    cameraClicked=false;
+                    startScan(ScanConstants.OPEN_CAMERA);
+                }else{
+                    openMediaContent();
+                }
+
             }
         }
 
@@ -422,18 +455,18 @@ public class HomeActivity extends AppCompatActivity implements
             btnOk.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    hideKeyboard(edtFilename);
                     String name = edtFilename.getText().toString().trim();
                     if (name.equals("")) {
                         edtFilename.setError("Please enter valid name");
                     } else {
                         dialog.dismiss();
                         showProgressDialog(R.string.uploading);
-
                         Bitmap bitmap = null;
                         try {
                             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                            String filePath = PATH + name+ EXTENSION;
-                            uploadImage(rotateBitmap(bitmap, 90), filePath);
+                            String filePath = PATH + name + EXTENSION;
+                            uploadImage(rotateBitmap(bitmap, 90), filePath, name);
                         } catch (Exception e) {
                             hideProgressDialog();
                             showMessage("Upload failed", failureClickListener);
@@ -451,6 +484,40 @@ public class HomeActivity extends AppCompatActivity implements
                 @Override
                 public void onDismiss(DialogInterface dialogInterface) {
                     getContentResolver().delete(uri, null, null);
+                }
+            });
+        }else if(requestCode == ScanConstants.PICKFILE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+            dialog = new Dialog(this);
+            dialog.setContentView(R.layout.dialog_file_name);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+
+            final EditText edtFilename = (EditText) dialog.findViewById(R.id.name_field);
+            Button btnOk = (Button) dialog.findViewById(R.id.submit);
+            btnOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    hideKeyboard(edtFilename);
+                    String name = edtFilename.getText().toString().trim();
+                    if (name.equals("")) {
+                        edtFilename.setError("Please enter valid name");
+                    } else {
+                        dialog.dismiss();
+                        showProgressDialog(R.string.uploading);
+                        Bitmap bitmap = null;
+                        try {
+                            bitmap =  getBitmap(data.getData());
+                            String filePath = PATH + name + EXTENSION;
+                            uploadImage(rotateBitmap(bitmap, 90), filePath, name);
+                        } catch (Exception e) {
+                            hideProgressDialog();
+                            showMessage("Upload failed", failureClickListener);
+                            e.printStackTrace();
+                        } finally {
+                            if (bitmap != null)
+                                bitmap.recycle();
+                        }
+                    }
                 }
             });
         }
@@ -483,6 +550,7 @@ public class HomeActivity extends AppCompatActivity implements
                         grantResults[2] == PackageManager.PERMISSION_GRANTED) {
 
                     initFingerprint();
+                    showDialog();
                 } else {
 
                 }
@@ -491,7 +559,7 @@ public class HomeActivity extends AppCompatActivity implements
         }
     }
 
-    private void uploadImage(Bitmap bitmap, final String filePath) throws Exception {
+    private void uploadImage(Bitmap bitmap, final String filePath, String name) throws Exception {
         Document document = null;
         try {
             document = new Document(PageSize.A4);
@@ -504,11 +572,17 @@ public class HomeActivity extends AppCompatActivity implements
             image.scaleAbsolute(PageSize.A4.getWidth(), PageSize.A4.getHeight());
             image.setAbsolutePosition(0, 0);
             document.add(image);
+
+            final Item item =new Item();
+            item.setName(name+EXTENSION);
+            item.setUploadDate(formatDate(System.currentTimeMillis()));
+            item.setSize(getFileSize(bArray));
+            item.setType("pdf");
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... params) {
                     try {
-                        uploadFile(filePath);
+                        uploadFile(filePath,item);
                     } catch (Exception e) {
                         showMessage("Upload failed", failureClickListener);
                         e.printStackTrace();
@@ -532,7 +606,7 @@ public class HomeActivity extends AppCompatActivity implements
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
-    public int uploadFile(final String selectedFilePath) throws Exception {
+    public int uploadFile(final String selectedFilePath,  Item item) throws Exception {
 
         int serverResponseCode = 0;
 
@@ -590,8 +664,12 @@ public class HomeActivity extends AppCompatActivity implements
             dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             serverResponseCode = connection.getResponseCode();
+            if(serverResponseCode==200){
+                storeDocument(item);
+            }
             hideProgressDialog();
-            showMessage("Upload Successful", successClickListener);
+            updateList();
+           // showMessage("Upload Successful", successClickListener);
         } catch (Exception e) {
             hideProgressDialog();
             showMessage("Upload failed", failureClickListener);
@@ -628,9 +706,14 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void hideProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.hide();
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                    mProgressDialog.hide();
+                }
+            }
+        });
     }
 
     private void showMessage(final String message, final DialogInterface.OnClickListener onClickListener) {
@@ -660,4 +743,68 @@ public class HomeActivity extends AppCompatActivity implements
 
         }
     };
+
+    private void storeDocument(Item item){
+        DocumentDataSource documentDataSource=new DocumentDataSource(this);
+        documentDataSource.open();
+        documentDataSource.setItem(item);
+        documentDataSource.close();
+    }
+
+    private String getFileSize(byte[] file){
+        int fileSize = file.length;
+        double size=(double)fileSize/(1024*1024);
+        DecimalFormat df = new DecimalFormat("####0.00");
+        return String.valueOf(df.format(size))+"MB";
+    }
+
+    private void hideKeyboard(View v){
+        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
+    private void updateList(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                listItem = new ArrayList<>();
+                DocumentDataSource documentDataSource = new DocumentDataSource(HomeActivity.this);
+                documentDataSource.open();
+                listItem = documentDataSource.getAllDocuments();
+                documentDataSource.close();
+
+                if (listItem.size() > 0) {
+                    mRecyclerView.setAdapter(new DocListAdapter(listItem, HomeActivity.this));
+                }
+            }
+        });
+    }
+
+    public String formatDate(long time){
+        String dateFormat="MMMM dd yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        return formatter.format(calendar.getTime());
+    }
+
+    public void openMediaContent() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
+    }
+
+    private Bitmap getBitmap(Uri selectedimg) throws IOException {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 3;
+        AssetFileDescriptor fileDescriptor = null;
+        fileDescriptor =
+                getContentResolver().openAssetFileDescriptor(selectedimg, "r");
+        Bitmap original
+                = BitmapFactory.decodeFileDescriptor(
+                fileDescriptor.getFileDescriptor(), null, options);
+        return original;
+    }
 }

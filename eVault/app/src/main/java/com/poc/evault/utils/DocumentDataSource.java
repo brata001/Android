@@ -20,10 +20,11 @@ public class DocumentDataSource {
     // Database fields
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
-    private String[] allColumns = { DatabaseHelper.COLUMN_ID, DatabaseHelper.COLUMN_FILE_NAME,
-            DatabaseHelper.COLUMN_UPLOAD_DATE,DatabaseHelper.COLUMN_FILE_SIZE,DatabaseHelper.COLUMN_TYPE };
+    private String[] allColumns = {DatabaseHelper.COLUMN_ID, DatabaseHelper.COLUMN_FILE_NAME,
+            DatabaseHelper.COLUMN_UPLOAD_DATE, DatabaseHelper.COLUMN_FILE_SIZE, DatabaseHelper.COLUMN_TYPE};
 
     public DocumentDataSource(Context context) {
+
         dbHelper = new DatabaseHelper(context);
     }
 
@@ -45,7 +46,7 @@ public class DocumentDataSource {
     public Item setItem(Item item) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_FILE_NAME, item.getName());
-        values.put(DatabaseHelper.COLUMN_UPLOAD_DATE, item.getType());
+        values.put(DatabaseHelper.COLUMN_UPLOAD_DATE, item.getUploadDate());
         values.put(DatabaseHelper.COLUMN_FILE_SIZE, item.getSize());
         values.put(DatabaseHelper.COLUMN_TYPE, item.getType());
         long insertId = database.insert(DatabaseHelper.TABLE_DOC_DATA, null,
@@ -59,8 +60,7 @@ public class DocumentDataSource {
         return newDocument;
     }
 
-    public void deleteItem(Item item) {
-        long id = item.getId();
+    public void deleteItem(long id) {
         System.out.println("Document deleted with id: " + id);
         database.delete(DatabaseHelper.TABLE_DOC_DATA, DatabaseHelper.COLUMN_ID
                 + " = " + id, null);
