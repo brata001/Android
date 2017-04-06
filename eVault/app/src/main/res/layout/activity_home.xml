@@ -85,12 +85,17 @@
         app:menu_color="@color/blue"
         app:menu_open="arc_left">
 
+        <ImageView
+            android:id="@+id/family_email"
+            android:layout_width="62dp"
+            android:src="@mipmap/family"
+            android:layout_height="62dp" />
 
         <ImageView
             android:id="@+id/sd_card"
-            android:layout_width="65dp"
+            android:layout_width="64dp"
             android:src="@mipmap/sd_card"
-            android:layout_height="70dp" />
+            android:layout_height="64dp" />
 
         <ImageView
             android:id="@+id/camera"

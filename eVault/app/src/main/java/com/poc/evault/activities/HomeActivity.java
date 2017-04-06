@@ -122,9 +122,8 @@ public class HomeActivity extends AppCompatActivity implements
     private RecyclerView.LayoutManager mLayoutManager;
     private List<Item> listItem;
     private boolean cameraClicked=false;
+    private boolean emailClicked=false;
     private ArcMenu arcMenu;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +144,7 @@ public class HomeActivity extends AppCompatActivity implements
         arcMenu=(ArcMenu)findViewById(R.id.arcMenu);
         ImageView imgCamera= (ImageView) findViewById(R.id.camera);
         ImageView imgSDCard= (ImageView) findViewById(R.id.sd_card);
+        ImageView imgFamilyEmail= (ImageView) findViewById(R.id.family_email);
         ImageView imgLogout = (ImageView) findViewById(R.id.logout);
         TextView txtName = (TextView) findViewById(R.id.name);
         txtName.setText(name);
@@ -193,6 +193,7 @@ public class HomeActivity extends AppCompatActivity implements
 
         imgCamera.setOnClickListener(this);
         imgSDCard.setOnClickListener(this);
+        imgFamilyEmail.setOnClickListener(this);
         imgLogout.setOnClickListener(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -225,6 +226,12 @@ public class HomeActivity extends AppCompatActivity implements
                 }
                 cameraClicked=false;
                 checkPermissions();
+                break;
+            case R.id.family_email:
+                emailClicked=true;
+                cameraClicked=false;
+                initFingerprint();
+                showDialog();
                 break;
             case R.id.logout:
                 signOut();
@@ -329,9 +336,11 @@ public class HomeActivity extends AppCompatActivity implements
             if (isAuthenticationRequired) {
                 dialog.dismiss();
                 isAuthenticationRequired = false;
-                if(cameraClicked){
-                    cameraClicked=false;
+                if(cameraClicked) {
+                    cameraClicked = false;
                     startScan(ScanConstants.OPEN_CAMERA);
+                }else if(emailClicked){
+
                 }else{
                     openMediaContent();
                 }
