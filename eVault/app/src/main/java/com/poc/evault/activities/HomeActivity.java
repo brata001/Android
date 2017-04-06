@@ -121,8 +121,8 @@ public class HomeActivity extends AppCompatActivity implements
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private List<Item> listItem;
-    private boolean cameraClicked=false;
-    private boolean emailClicked=false;
+    private boolean cameraClicked = false;
+    private boolean emailClicked = false;
     private ArcMenu arcMenu;
 
     @Override
@@ -141,10 +141,10 @@ public class HomeActivity extends AppCompatActivity implements
         }
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-        arcMenu=(ArcMenu)findViewById(R.id.arcMenu);
-        ImageView imgCamera= (ImageView) findViewById(R.id.camera);
-        ImageView imgSDCard= (ImageView) findViewById(R.id.sd_card);
-        ImageView imgFamilyEmail= (ImageView) findViewById(R.id.family_email);
+        arcMenu = (ArcMenu) findViewById(R.id.arcMenu);
+        ImageView imgCamera = (ImageView) findViewById(R.id.camera);
+        ImageView imgSDCard = (ImageView) findViewById(R.id.sd_card);
+        ImageView imgFamilyEmail = (ImageView) findViewById(R.id.family_email);
         ImageView imgLogout = (ImageView) findViewById(R.id.logout);
         TextView txtName = (TextView) findViewById(R.id.name);
         txtName.setText(name);
@@ -214,22 +214,25 @@ public class HomeActivity extends AppCompatActivity implements
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.camera:
-                if(arcMenu.isMenuOpened()){
+                if (arcMenu.isMenuOpened()) {
                     arcMenu.toggleMenu();
                 }
-                cameraClicked=true;
+                cameraClicked = true;
                 checkPermissions();
                 break;
             case R.id.sd_card:
-                if(arcMenu.isMenuOpened()){
+                if (arcMenu.isMenuOpened()) {
                     arcMenu.toggleMenu();
                 }
-                cameraClicked=false;
+                cameraClicked = false;
                 checkPermissions();
                 break;
             case R.id.family_email:
-                emailClicked=true;
-                cameraClicked=false;
+                if (arcMenu.isMenuOpened()) {
+                    arcMenu.toggleMenu();
+                }
+                emailClicked = true;
+                cameraClicked = false;
                 initFingerprint();
                 showDialog();
                 break;
@@ -336,12 +339,12 @@ public class HomeActivity extends AppCompatActivity implements
             if (isAuthenticationRequired) {
                 dialog.dismiss();
                 isAuthenticationRequired = false;
-                if(cameraClicked) {
+                if (cameraClicked) {
                     cameraClicked = false;
                     startScan(ScanConstants.OPEN_CAMERA);
-                }else if(emailClicked){
-
-                }else{
+                } else if (emailClicked) {
+                    startActivity(new Intent(HomeActivity.this, RegisterEmailActivity.class));
+                } else {
                     openMediaContent();
                 }
 
@@ -498,7 +501,7 @@ public class HomeActivity extends AppCompatActivity implements
                     getContentResolver().delete(uri, null, null);
                 }
             });
-        }else if(requestCode == ScanConstants.PICKFILE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+        } else if (requestCode == ScanConstants.PICKFILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             dialog = new Dialog(this);
             dialog.setContentView(R.layout.dialog_file_name);
             dialog.setCanceledOnTouchOutside(false);
@@ -518,7 +521,7 @@ public class HomeActivity extends AppCompatActivity implements
                         showProgressDialog(R.string.uploading);
                         Bitmap bitmap = null;
                         try {
-                            bitmap =  getBitmap(data.getData());
+                            bitmap = getBitmap(data.getData());
                             String filePath = PATH + name + EXTENSION;
                             uploadImage(rotateBitmap(bitmap, 90), filePath, name);
                         } catch (Exception e) {
@@ -585,8 +588,8 @@ public class HomeActivity extends AppCompatActivity implements
             image.setAbsolutePosition(0, 0);
             document.add(image);
 
-            final Item item =new Item();
-            item.setName(name+EXTENSION);
+            final Item item = new Item();
+            item.setName(name + EXTENSION);
             item.setUploadDate(formatDate(System.currentTimeMillis()));
             item.setSize(getFileSize(bArray));
             item.setType("pdf");
@@ -594,7 +597,7 @@ public class HomeActivity extends AppCompatActivity implements
                 @Override
                 protected Void doInBackground(Void... params) {
                     try {
-                        uploadFile(filePath,item);
+                        uploadFile(filePath, item);
                     } catch (Exception e) {
                         showMessage("Upload failed", failureClickListener);
                         e.printStackTrace();
@@ -618,7 +621,7 @@ public class HomeActivity extends AppCompatActivity implements
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
-    public int uploadFile(final String selectedFilePath,  Item item) throws Exception {
+    public int uploadFile(final String selectedFilePath, Item item) throws Exception {
 
         int serverResponseCode = 0;
 
@@ -676,12 +679,12 @@ public class HomeActivity extends AppCompatActivity implements
             dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             serverResponseCode = connection.getResponseCode();
-            if(serverResponseCode==200){
+            if (serverResponseCode == 200) {
                 storeDocument(item);
             }
             hideProgressDialog();
             updateList();
-           // showMessage("Upload Successful", successClickListener);
+            // showMessage("Upload Successful", successClickListener);
         } catch (Exception e) {
             hideProgressDialog();
             showMessage("Upload failed", failureClickListener);
@@ -756,26 +759,26 @@ public class HomeActivity extends AppCompatActivity implements
         }
     };
 
-    private void storeDocument(Item item){
-        DocumentDataSource documentDataSource=new DocumentDataSource(this);
+    private void storeDocument(Item item) {
+        DocumentDataSource documentDataSource = new DocumentDataSource(this);
         documentDataSource.open();
         documentDataSource.setItem(item);
         documentDataSource.close();
     }
 
-    private String getFileSize(byte[] file){
+    private String getFileSize(byte[] file) {
         int fileSize = file.length;
-        double size=(double)fileSize/(1024*1024);
+        double size = (double) fileSize / (1024 * 1024);
         DecimalFormat df = new DecimalFormat("####0.00");
-        return String.valueOf(df.format(size))+"MB";
+        return String.valueOf(df.format(size)) + "MB";
     }
 
-    private void hideKeyboard(View v){
-        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+    private void hideKeyboard(View v) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    private void updateList(){
+    private void updateList() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -797,8 +800,8 @@ public class HomeActivity extends AppCompatActivity implements
         });
     }
 
-    public String formatDate(long time){
-        String dateFormat="MMMM dd yyyy";
+    public String formatDate(long time) {
+        String dateFormat = "MMMM dd yyyy";
         SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
 
         Calendar calendar = Calendar.getInstance();

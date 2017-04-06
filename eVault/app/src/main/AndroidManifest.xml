@@ -29,6 +29,8 @@
             android:name=".activities.SigninActivity" android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.HomeActivity" android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.RegisterEmailActivity" android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
