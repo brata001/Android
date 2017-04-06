@@ -1,5 +1,6 @@
 package com.poc.evault.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -38,7 +39,7 @@ public class SigninActivity extends AppCompatActivity {
                 }else if(!storedPassword.equals(password)){
                     edtPassword.setError("Please enter valid password");
                 }else{
-
+                    startActivity(new Intent(SigninActivity.this, HomeActivity.class));
                 }
             }
         });
