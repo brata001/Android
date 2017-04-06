@@ -56,6 +56,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.poc.evault.R;
 import com.poc.evault.adapters.DocListAdapter;
 import com.poc.evault.adapters.SpacesItemDecoration;
+import com.poc.evault.callbacks.OnDeleteClick;
 import com.poc.evault.model.Item;
 import com.poc.evault.utils.DocumentDataSource;
 import com.sa90.materialarcmenu.ArcMenu;
@@ -122,6 +123,8 @@ public class HomeActivity extends AppCompatActivity implements
     private List<Item> listItem;
     private boolean cameraClicked=false;
     private ArcMenu arcMenu;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -774,7 +777,12 @@ public class HomeActivity extends AppCompatActivity implements
                 documentDataSource.close();
 
                 if (listItem.size() > 0) {
-                    mRecyclerView.setAdapter(new DocListAdapter(listItem, HomeActivity.this));
+                    mRecyclerView.setAdapter(new DocListAdapter(listItem, HomeActivity.this, new OnDeleteClick() {
+                        @Override
+                        public void onDelete() {
+                            updateList();
+                        }
+                    }));
                 }
             }
         });

@@ -17,5 +17,6 @@
     <string name="delete">Delete</string>
     <string name="uploading">Uploading...</string>
     <string name="downloading">Downloading...</string>
+    <string name="deleting">Deleting...</string>
     <string name="ok">OK</string>
 </resources>

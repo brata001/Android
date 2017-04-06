@@ -24,7 +24,9 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.poc.evault.R;
+import com.poc.evault.callbacks.OnDeleteClick;
 import com.poc.evault.model.Item;
+import com.poc.evault.utils.DocumentDataSource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -45,6 +47,8 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
     private Activity context;
     private ProgressDialog mProgressDialog;
     private String PATH = Environment.getExternalStorageDirectory() + "/";
+    private OnDeleteClick onDeleteClick;
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public CircleImageView imgItemIcon;
         public TextView txtItemName;
@@ -54,23 +58,24 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
 
         public ViewHolder(View view) {
             super(view);
-            imgItemIcon=(CircleImageView)view.findViewById(R.id.item_icon);
+            imgItemIcon = (CircleImageView) view.findViewById(R.id.item_icon);
             txtItemName = (TextView) view.findViewById(R.id.item_name);
             txtItemUploadDate = (TextView) view.findViewById(R.id.item_upload_date);
             txtItemSize = (TextView) view.findViewById(R.id.item_size);
-            imgMenu=(ImageView)view.findViewById(R.id.item_menu_icon);
+            imgMenu = (ImageView) view.findViewById(R.id.item_menu_icon);
         }
     }
 
-    public DocListAdapter(List<Item> listItem, Activity context) {
+    public DocListAdapter(List<Item> listItem, Activity context, OnDeleteClick onDeleteClick) {
         this.listItem = listItem;
-        this.context=context;
+        this.context = context;
+        this.onDeleteClick=onDeleteClick;
     }
 
     @Override
     public DocListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
-        View v =  LayoutInflater.from(parent.getContext())
+                                                        int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_row, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -78,20 +83,22 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        final Item item=listItem.get(position);
+        final Item item = listItem.get(position);
         Resources res = context.getResources();
         final String name = String.format(res.getString(R.string.item_name), item.getName());
         String date = String.format(res.getString(R.string.item_upload_date), item.getUploadDate());
         String size = String.format(res.getString(R.string.item_size), item.getSize());
         int imageId;
-        if(item.getType().equalsIgnoreCase("pdf")){
-            imageId=R.mipmap.pdf;
-        }else if(item.getType().equalsIgnoreCase("doc")){
-            imageId=R.mipmap.doc;
-        }else if(item.getType().equalsIgnoreCase("xls")||item.getType().equalsIgnoreCase("xlsx")){
-            imageId=R.mipmap.excel;
-        }else{
-            imageId=R.mipmap.ic_launcher;
+        if (item.getType().equalsIgnoreCase("pdf")) {
+            imageId = R.mipmap.pdf;
+        } else if (item.getType().equalsIgnoreCase("doc")|| item.getType().equalsIgnoreCase("docx")) {
+            imageId = R.mipmap.doc;
+        } else if (item.getType().equalsIgnoreCase("xls") || item.getType().equalsIgnoreCase("xlsx")) {
+            imageId = R.mipmap.excel;
+        } else if (item.getType().equalsIgnoreCase("ppt") || item.getType().equalsIgnoreCase("pptx")) {
+            imageId = R.mipmap.excel;
+        } else {
+            imageId = R.mipmap.ic_launcher;
         }
         holder.imgItemIcon.setImageBitmap(BitmapFactory.decodeResource(res, imageId));
         holder.txtItemName.setText(name);
@@ -100,7 +107,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         holder.imgMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showPopup(holder.imgMenu, item.getName());
+                showPopup(holder.imgMenu, item);
             }
         });
         //bm.recycle();
@@ -111,7 +118,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         return listItem.size();
     }
 
-    public void showPopup(View v, final String name) {
+    public void showPopup(View v, final Item listItem) {
         PopupMenu popup = new PopupMenu(context, v);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_item, popup.getMenu());
@@ -123,16 +130,22 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_view:
-                        showProgressDialog(R.string.downloading,context);
-                        new ViewImage(context).execute(name);
+                        showProgressDialog(R.string.downloading, context);
+                        new ViewImage(context).execute(listItem.getName());
                         break;
                     case R.id.action_download:
-                        showProgressDialog(R.string.downloading,context);
+                        showProgressDialog(R.string.downloading, context);
                         // do what you need
-                        new DownloadImage(context).execute(name);
+                        new DownloadImage(context).execute(listItem.getName());
                         break;
                     case R.id.action_delete:
-                        // do what you need .
+                        showProgressDialog(R.string.deleting, context);
+                        DocumentDataSource documentDataSource = new DocumentDataSource(context);
+                        documentDataSource.open();
+                        documentDataSource.deleteItem(listItem.getId());
+                        documentDataSource.close();
+                        hideProgressDialog(context);
+                        onDeleteClick.onDelete();
                         break;
                     default:
                         return false;
@@ -144,9 +157,11 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
 
     public class ViewImage extends AsyncTask<String, Integer, Boolean> {
         Activity context;
-        public ViewImage(Activity context){
-            this.context=context;
+
+        public ViewImage(Activity context) {
+            this.context = context;
         }
+
         @Override
         protected Boolean doInBackground(String... arg0) {
             // This is done in a background thread
@@ -157,19 +172,18 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
          * Called after the image has been downloaded
          * -> this calls a function on the main thread again
          */
-        protected void onPostExecute(Drawable image)
-        {
+        protected void onPostExecute(Drawable image) {
 
         }
 
 
         /**
          * Actually download the Image from the _url
+         *
          * @param fileName
          * @return
          */
-        private boolean viewImage(String fileName, Activity context)
-        {
+        private boolean viewImage(String fileName, Activity context) {
             //Prepare to download image
             URL url;
             BufferedOutputStream out;
@@ -177,7 +191,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
             BufferedInputStream buf;
 
             try {
-                String _url = "http://49.12.33.176/TDLockerServer/uploads/"+fileName;
+                String _url = "http://49.12.33.176/TDLockerServer/uploads/" + fileName;
                 url = new URL(_url);
                 in = url.openStream();
 
@@ -204,7 +218,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
                     in.close();
                 }
                 hideProgressDialog(context);
-                openFile(context,fileName);
+                openFile(context, fileName);
                 return true;
 
             } catch (Exception e) {
@@ -219,32 +233,33 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
 
     public class DownloadImage extends AsyncTask<String, Integer, Boolean> {
         Activity context;
-        public DownloadImage(Activity context){
-            this.context=context;
+
+        public DownloadImage(Activity context) {
+            this.context = context;
         }
+
         @Override
         protected Boolean doInBackground(String... arg0) {
             // This is done in a background thread
-            return downloadImage(arg0[0],context);
+            return downloadImage(arg0[0], context);
         }
 
         /**
          * Called after the image has been downloaded
          * -> this calls a function on the main thread again
          */
-        protected void onPostExecute(Drawable image)
-        {
+        protected void onPostExecute(Drawable image) {
 
         }
 
 
         /**
          * Actually download the Image from the _url
+         *
          * @param fileName
          * @return
          */
-        private boolean downloadImage(String fileName, Activity context)
-        {
+        private boolean downloadImage(String fileName, Activity context) {
             //Prepare to download image
             URL url;
             BufferedOutputStream out;
@@ -252,7 +267,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
             BufferedInputStream buf;
 
             try {
-                String _url = "http://49.12.33.176/TDLockerServer/uploads/"+fileName;
+                String _url = "http://49.12.33.176/TDLockerServer/uploads/" + fileName;
                 url = new URL(_url);
                 in = url.openStream();
 
@@ -318,7 +333,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         });
     }
 
-    private void openFile(Activity context, String fileName){
+    private void openFile(Activity context, String fileName) {
         File file = new File(PATH, fileName);
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
