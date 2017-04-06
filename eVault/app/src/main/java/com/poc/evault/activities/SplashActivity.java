@@ -172,6 +172,7 @@ public class SplashActivity extends AppCompatActivity implements
         switch (v.getId()) {
             case R.id.signup:
                 startActivity(new Intent(SplashActivity.this, SignupActivity.class));
+                finish();
                 break;
             case R.id.already_have_an_account_label:
                 if(mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
@@ -183,6 +184,7 @@ public class SplashActivity extends AppCompatActivity implements
                 break;
             case R.id.evault_login:
                 startActivity(new Intent(SplashActivity.this, SigninActivity.class));
+                finish();
                 break;
             case R.id.facebook_login:
                 break;

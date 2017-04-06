@@ -43,8 +43,15 @@ public class SignupActivity extends AppCompatActivity {
                     SharedPreferenceUtil.setEmail(email);
                     SharedPreferenceUtil.setPassword(password);
                     startActivity(new Intent(SignupActivity.this, HomeActivity.class));
+                    finish();
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(SignupActivity.this, SplashActivity.class));
+        finish();
     }
 }

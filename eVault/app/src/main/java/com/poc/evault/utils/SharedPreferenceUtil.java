@@ -11,8 +11,8 @@ import com.poc.evault.application.EVaultApplication;
 public class SharedPreferenceUtil {
     public static final String PREFS_NAME = "AOP_PREFS";
     private static SharedPreferences sharedPreference;
-    private static String email;
-    private static String password;
+    private static final String EMAIL="email";
+    private static final String PASSWORD="password";
 
     static{
         sharedPreference = EVaultApplication.getAppContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -20,18 +20,22 @@ public class SharedPreferenceUtil {
 
 
     public static String getEmail() {
-        return email;
+        return sharedPreference.getString(EMAIL,"");
     }
 
     public static void setEmail(String email) {
-        SharedPreferenceUtil.email = email;
+        SharedPreferences.Editor editor = sharedPreference.edit();
+        editor.putString(EMAIL, email);
+        editor.commit();
     }
 
     public static String getPassword() {
-        return password;
+        return sharedPreference.getString(PASSWORD,"");
     }
 
     public static void setPassword(String password) {
-        SharedPreferenceUtil.password = password;
+        SharedPreferences.Editor editor = sharedPreference.edit();
+        editor.putString(PASSWORD, password);
+        editor.commit();
     }
 }

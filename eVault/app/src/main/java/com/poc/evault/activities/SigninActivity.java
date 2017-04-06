@@ -40,8 +40,15 @@ public class SigninActivity extends AppCompatActivity {
                     edtPassword.setError("Please enter valid password");
                 }else{
                     startActivity(new Intent(SigninActivity.this, HomeActivity.class));
+                    finish();
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(SigninActivity.this, SplashActivity.class));
+        finish();
     }
 }
