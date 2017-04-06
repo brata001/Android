@@ -59,6 +59,7 @@ import com.poc.evault.adapters.SpacesItemDecoration;
 import com.poc.evault.callbacks.OnDeleteClick;
 import com.poc.evault.model.Item;
 import com.poc.evault.utils.DocumentDataSource;
+import com.poc.evault.utils.FilePath;
 import com.sa90.materialarcmenu.ArcMenu;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
@@ -124,6 +125,7 @@ public class HomeActivity extends AppCompatActivity implements
     private boolean cameraClicked = false;
     private boolean emailClicked = false;
     private ArcMenu arcMenu;
+    private final static int PICKFILE_REQUEST_CODE_SD_CARD = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -345,7 +347,7 @@ public class HomeActivity extends AppCompatActivity implements
                 } else if (emailClicked) {
                     startActivity(new Intent(HomeActivity.this, RegisterEmailActivity.class));
                 } else {
-                    openMediaContent();
+                    openMediaContentFromSDCard();
                 }
 
             }
@@ -501,40 +503,33 @@ public class HomeActivity extends AppCompatActivity implements
                     getContentResolver().delete(uri, null, null);
                 }
             });
-        } else if (requestCode == ScanConstants.PICKFILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            dialog = new Dialog(this);
-            dialog.setContentView(R.layout.dialog_file_name);
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-
-            final EditText edtFilename = (EditText) dialog.findViewById(R.id.name_field);
-            Button btnOk = (Button) dialog.findViewById(R.id.submit);
-            btnOk.setOnClickListener(new View.OnClickListener() {
+        } else if (requestCode == PICKFILE_REQUEST_CODE_SD_CARD && resultCode == Activity.RESULT_OK) {
+            Uri selectedFileUri = data.getData();
+            final String selectedFilePath = FilePath.getPath(this, selectedFileUri);
+            final String filename = selectedFilePath.substring(selectedFilePath.lastIndexOf("/")+1);
+            final String extension = selectedFilePath.substring(selectedFilePath.lastIndexOf(".")+1);
+            final File selectedFile = new File(selectedFilePath);
+            final Item item = new Item();
+            item.setType(extension);
+            double size=(double)selectedFile.length()/(1024*1024);
+            DecimalFormat df = new DecimalFormat("####0.00");
+            item.setSize(String.valueOf(df.format(size)) + "MB");
+            item.setUploadDate(formatDate(System.currentTimeMillis()));
+            item.setName(filename);
+            showProgressDialog(R.string.uploading);
+            new AsyncTask<Void, Void, Void>() {
                 @Override
-                public void onClick(View view) {
-                    hideKeyboard(edtFilename);
-                    String name = edtFilename.getText().toString().trim();
-                    if (name.equals("")) {
-                        edtFilename.setError("Please enter valid name");
-                    } else {
-                        dialog.dismiss();
-                        showProgressDialog(R.string.uploading);
-                        Bitmap bitmap = null;
-                        try {
-                            bitmap = getBitmap(data.getData());
-                            String filePath = PATH + name + EXTENSION;
-                            uploadImage(rotateBitmap(bitmap, 90), filePath, name);
-                        } catch (Exception e) {
-                            hideProgressDialog();
-                            showMessage("Upload failed", failureClickListener);
-                            e.printStackTrace();
-                        } finally {
-                            if (bitmap != null)
-                                bitmap.recycle();
-                        }
+                protected Void doInBackground(Void... params) {
+                    try {
+                        uploadFile(selectedFilePath,item);
+                    } catch (Exception e) {
+                        showMessage("Upload failed", failureClickListener);
+                        e.printStackTrace();
                     }
+
+                    return null;
                 }
-            });
+            }.execute();
         }
     }
 
@@ -826,5 +821,12 @@ public class HomeActivity extends AppCompatActivity implements
                 = BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.getFileDescriptor(), null, options);
         return original;
+    }
+
+    private void openMediaContentFromSDCard(){
+        Intent intent = new Intent();
+        intent.setType("*/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Choose File to Upload.."), PICKFILE_REQUEST_CODE_SD_CARD);
     }
 }

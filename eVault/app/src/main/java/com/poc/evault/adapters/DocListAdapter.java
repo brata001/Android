@@ -35,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -96,7 +97,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         } else if (item.getType().equalsIgnoreCase("xls") || item.getType().equalsIgnoreCase("xlsx")) {
             imageId = R.mipmap.excel;
         } else if (item.getType().equalsIgnoreCase("ppt") || item.getType().equalsIgnoreCase("pptx")) {
-            imageId = R.mipmap.excel;
+            imageId = R.mipmap.ppt;
         } else {
             imageId = R.mipmap.ic_launcher;
         }
@@ -131,12 +132,12 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
                 switch (item.getItemId()) {
                     case R.id.action_view:
                         showProgressDialog(R.string.downloading, context);
-                        new ViewImage(context).execute(listItem.getName());
+                        new ViewImage(context).execute(listItem.getName(),listItem.getType());
                         break;
                     case R.id.action_download:
                         showProgressDialog(R.string.downloading, context);
                         // do what you need
-                        new DownloadImage(context).execute(listItem.getName());
+                        new DownloadImage(context).execute(listItem.getName(),listItem.getType());
                         break;
                     case R.id.action_delete:
                         showProgressDialog(R.string.deleting, context);
@@ -165,7 +166,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         @Override
         protected Boolean doInBackground(String... arg0) {
             // This is done in a background thread
-            return viewImage(arg0[0], context);
+            return viewImage(arg0[0], context,arg0[1]);
         }
 
         /**
@@ -183,7 +184,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
          * @param fileName
          * @return
          */
-        private boolean viewImage(String fileName, Activity context) {
+        private boolean viewImage(String fileName, Activity context, String type) {
             //Prepare to download image
             URL url;
             BufferedOutputStream out;
@@ -191,7 +192,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
             BufferedInputStream buf;
 
             try {
-                String _url = "http://49.12.33.176/TDLockerServer/uploads/" + fileName;
+                String _url = "http://49.12.33.176/TDLockerServer/uploads/" + fileName.replace(" ", "%20");
                 url = new URL(_url);
                 in = url.openStream();
 
@@ -218,7 +219,7 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
                     in.close();
                 }
                 hideProgressDialog(context);
-                openFile(context, fileName);
+                openFile(context, fileName, type);
                 return true;
 
             } catch (Exception e) {
@@ -333,14 +334,44 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         });
     }
 
-    private void openFile(Activity context, String fileName) {
+    private void openFile(Activity context, String fileName, String type) {
         File file = new File(PATH, fileName);
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
         Uri data = Uri.fromFile(file);
-        String type = "*/*";
-        intent.setDataAndType(data, type);
+        //String type = type;
+        intent.setDataAndType(data, getType(type));
         context.startActivity(intent);
+    }
+
+    private String getType(String type){
+        String mimeType="*/*";
+        if (type.contains("doc") || type.contains("docx")) {
+            mimeType="application/msword";
+        } else if (type.contains("pdf")) {
+            mimeType="application/pdf";
+        } else if (type.contains("ppt") || type.contains("pptx")) {
+            mimeType="application/vnd.ms-powerpoint";
+        } else if (type.contains("xls") || type.contains("xlsx")) {
+            mimeType="application/vnd.ms-excel";
+        } else if (type.contains("zip") || type.contains("rar")) {
+            mimeType="application/x-wav";
+        } else if (type.contains("rtf")) {
+            mimeType="application/rtf";
+        } else if (type.contains("wav") || type.contains("mp3")) {
+            mimeType="audio/x-wav";
+        } else if (type.contains("gif")) {
+            mimeType="image/gif";
+        } else if (type.contains("jpg") || type.contains("jpeg") || type.contains("png")) {
+            mimeType="image/jpeg";
+        } else if (type.contains("txt")) {
+            mimeType="text/plain";
+        } else if (type.contains("3gp") || type.contains("mpg") ||
+                type.contains("mpeg") || type.contains("mpe") || type.contains("mp4") || type.contains("avi")) {
+            mimeType="video/*";
+        }
+
+        return mimeType;
     }
 }
 
