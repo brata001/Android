@@ -788,7 +788,7 @@ public class HomeActivity extends AppCompatActivity implements
                 listItem = documentDataSource.getAllDocuments();
                 documentDataSource.close();
 
-                if (listItem.size() > 0) {
+                if (listItem.size() >= 0) {
                     mRecyclerView.setAdapter(new DocListAdapter(listItem, HomeActivity.this, new OnDeleteClick() {
                         @Override
                         public void onDelete() {
