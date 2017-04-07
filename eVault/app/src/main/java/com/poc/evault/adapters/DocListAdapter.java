@@ -101,7 +101,8 @@ public class DocListAdapter extends RecyclerView.Adapter<DocListAdapter.ViewHold
         } else {
             imageId = R.mipmap.ic_launcher;
         }
-        holder.imgItemIcon.setImageBitmap(BitmapFactory.decodeResource(res, imageId));
+        //holder.imgItemIcon.setImageBitmap(BitmapFactory.decodeResource(res, imageId));
+        holder.imgItemIcon.setImageResource(imageId);
         holder.txtItemName.setText(name);
         holder.txtItemUploadDate.setText(date);
         holder.txtItemSize.setText(size);

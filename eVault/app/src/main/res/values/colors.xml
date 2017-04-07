@@ -8,4 +8,6 @@
     <color name="blue_grey_500">#607D8B</color>
     <color name="blue">#9BB6E3</color>
     <color name="default_purple">#8162c9</color>
+    <color name="grey_background">#3F3D44</color>
+    <color name="white">#FFFFFF</color>
 </resources>

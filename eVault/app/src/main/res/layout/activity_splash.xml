@@ -4,7 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#7A63AB">
 
     <RelativeLayout
         android:id="@+id/signin_layout"
@@ -15,7 +16,7 @@
         <ViewFlipper
             android:id="@+id/imageCarouselContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="600dp"
             android:flipInterval="3000"
             android:orientation="vertical">
 
@@ -23,15 +24,15 @@
                 android:id="@+id/page1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@mipmap/bg1" />
+                android:background="@mipmap/benefit1" />
 
             <ImageView
                 android:id="@+id/page2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@mipmap/bg2" />
+                android:background="@mipmap/benefit2" />
 
-            <ImageView
+            <!--<ImageView
                 android:id="@+id/page3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -41,7 +42,7 @@
                 android:id="@+id/page4"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@mipmap/bg4" />
+                android:background="@mipmap/bg4" />-->
         </ViewFlipper>
 
 
@@ -51,9 +52,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="10dp"
             android:text="@string/already_have_an_account"
-            android:textColor="#000000" />
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/signup"
@@ -61,19 +62,19 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/already_have_an_account_label"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/button_border"
             android:text="Sign Up"
             android:textAllCaps="false"
-            android:textColor="#000000"
+            android:textColor="#FFFFFF"
             android:textSize="18sp" />
 
-        <LinearLayout
+       <!-- <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/signup"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="15dp">
 
             <ImageView
                 android:id="@+id/dot1"
@@ -97,7 +98,7 @@
                 android:id="@+id/dot4"
                 android:layout_width="12dp"
                 android:layout_height="12dp" />
-        </LinearLayout>
+        </LinearLayout>-->
 
 
     </RelativeLayout>
@@ -105,7 +106,7 @@
         android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:background="@mipmap/default_background"
+        android:background="#7A63AB"
         android:orientation="horizontal"
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
@@ -130,7 +131,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="10dp"
                 android:gravity="left|center"
-                android:textColor="#000000"
+                android:textColor="#FFFFFF"
                 android:text="Sign In" />
 
         </LinearLayout>
@@ -157,7 +158,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="10dp"
                 android:gravity="left|center"
-                android:textColor="#000000"
+                android:textColor="#FFFFFF"
                 android:text="Sign In" />
 
         </LinearLayout>
@@ -183,7 +184,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="10dp"
                 android:gravity="left|center"
-                android:textColor="#000000"
+                android:textColor="#FFFFFF"
                 android:text="Sign In" />
 
         </LinearLayout>

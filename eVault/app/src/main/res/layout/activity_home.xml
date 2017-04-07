@@ -3,17 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/default_background">
+    android:background="@color/grey_background">
 <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <RelativeLayout
         android:id="@+id/sign_up_layout"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="#F2F2F2">
+        android:layout_height="60dp"
+        android:background="#7A63AB">
 
-        <View
+       <!-- <View
             android:id="@+id/line"
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -56,7 +56,33 @@
             android:layout_margin="10dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:background="@mipmap/log_out" />
+            android:background="@mipmap/log_out" />-->
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="10dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="@mipmap/ic_menu_logo" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/icon"
+            android:text="Digital Deposit Box"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+        <ImageView
+            android:id="@+id/logout"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_margin="10dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@mipmap/logout" />
     </RelativeLayout>
 
     <android.support.v7.widget.RecyclerView
@@ -82,7 +108,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         app:menu_scr="@mipmap/add"
-        app:menu_color="@color/blue"
+        app:menu_color="@color/white"
         app:menu_open="arc_left">
 
         <ImageView
@@ -100,7 +126,7 @@
         <ImageView
             android:id="@+id/camera"
             android:layout_width="65dp"
-            android:src="@mipmap/camera"
+            android:src="@mipmap/camera2"
             android:layout_height="70dp" />
 
 

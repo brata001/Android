@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
@@ -46,28 +47,28 @@ public class SplashActivity extends AppCompatActivity implements
         View bottomSheet = findViewById(R.id.bottom_sheet);
         mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
 
-        TextView txtLogin=(TextView)findViewById(R.id.already_have_an_account_label);
+        TextView txtLogin = (TextView) findViewById(R.id.already_have_an_account_label);
         txtLogin.setOnClickListener(this);
 
         page1 = (ImageView) findViewById(R.id.page1);
         page2 = (ImageView) findViewById(R.id.page2);
-        page3 = (ImageView) findViewById(R.id.page3);
-        page4 = (ImageView) findViewById(R.id.page4);
+        // page3 = (ImageView) findViewById(R.id.page3);
+        // page4 = (ImageView) findViewById(R.id.page4);
 
-        indicator1 = (ImageView) findViewById(R.id.dot1);
-        indicator2 = (ImageView) findViewById(R.id.dot2);
-        indicator3 = (ImageView) findViewById(R.id.dot3);
-        indicator4 = (ImageView) findViewById(R.id.dot4);
+        //indicator1 = (ImageView) findViewById(R.id.dot1);
+        //indicator2 = (ImageView) findViewById(R.id.dot2);
+        //indicator3 = (ImageView) findViewById(R.id.dot3);
+        //indicator4 = (ImageView) findViewById(R.id.dot4);
 
         imageCarouselContainer = (ViewFlipper) findViewById(R.id.imageCarouselContainer);
-        imageCarouselContainer.addOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
+        //imageCarouselContainer.addOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
 
-        Button btnSignup=(Button)findViewById(R.id.signup);
+        Button btnSignup = (Button) findViewById(R.id.signup);
         btnSignup.setOnClickListener(this);
 
-        LinearLayout btnGoogleLogin=(LinearLayout)findViewById(R.id.google_login);
-        LinearLayout btnFacebookLogin=(LinearLayout)findViewById(R.id.facebook_login);
-        LinearLayout btnEVaultLogin=(LinearLayout)findViewById(R.id.evault_login);
+        LinearLayout btnGoogleLogin = (LinearLayout) findViewById(R.id.google_login);
+        LinearLayout btnFacebookLogin = (LinearLayout) findViewById(R.id.facebook_login);
+        LinearLayout btnEVaultLogin = (LinearLayout) findViewById(R.id.evault_login);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -75,7 +76,7 @@ public class SplashActivity extends AppCompatActivity implements
                 .build();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this )
+                .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         btnGoogleLogin.setOnClickListener(this);
@@ -131,10 +132,10 @@ public class SplashActivity extends AppCompatActivity implements
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
             GoogleSignInAccount acct = result.getSignInAccount();
-            Intent intent=new Intent(SplashActivity.this, HomeActivity.class);
-            intent.putExtra("URL",acct.getPhotoUrl().toString());
-            intent.putExtra("NAME",acct.getDisplayName());
-            intent.putExtra("EMAIL",acct.getEmail());
+            Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
+            intent.putExtra("URL", acct.getPhotoUrl().toString());
+            intent.putExtra("NAME", acct.getDisplayName());
+            intent.putExtra("EMAIL", acct.getEmail());
             startActivity(intent);
             finish();
         } else {
@@ -175,7 +176,7 @@ public class SplashActivity extends AppCompatActivity implements
                 finish();
                 break;
             case R.id.already_have_an_account_label:
-                if(mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
                     mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 }
                 break;
@@ -211,19 +212,19 @@ public class SplashActivity extends AppCompatActivity implements
         return outtoLeft;
     }
 
-    View.OnLayoutChangeListener onLayoutChangeListener_viewFlipper = new View.OnLayoutChangeListener() {
+  /*  View.OnLayoutChangeListener onLayoutChangeListener_viewFlipper = new View.OnLayoutChangeListener() {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
             if (imageCarouselContainer.getCurrentView() == page1) {
                 indicator1.setImageResource(R.drawable.page_selected_indicator);
                 indicator2.setImageResource(R.drawable.page_nonselected_indicator);
-                indicator3.setImageResource(R.drawable.page_nonselected_indicator);
-                indicator4.setImageResource(R.drawable.page_nonselected_indicator);
+                // indicator3.setImageResource(R.drawable.page_nonselected_indicator);
+                // indicator4.setImageResource(R.drawable.page_nonselected_indicator);
             } else if (imageCarouselContainer.getCurrentView() == page2) {
                 indicator1.setImageResource(R.drawable.page_nonselected_indicator);
                 indicator2.setImageResource(R.drawable.page_selected_indicator);
-                indicator3.setImageResource(R.drawable.page_nonselected_indicator);
-                indicator4.setImageResource(R.drawable.page_nonselected_indicator);
+                //indicator3.setImageResource(R.drawable.page_nonselected_indicator);
+                //indicator4.setImageResource(R.drawable.page_nonselected_indicator);
             } else if (imageCarouselContainer.getCurrentView() == page3) {
                 indicator1.setImageResource(R.drawable.page_nonselected_indicator);
                 indicator2.setImageResource(R.drawable.page_nonselected_indicator);
@@ -237,18 +238,18 @@ public class SplashActivity extends AppCompatActivity implements
             }
         }
     };
-
+*/
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        imageCarouselContainer.removeOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
+        //imageCarouselContainer.removeOnLayoutChangeListener(onLayoutChangeListener_viewFlipper);
     }
 
     @Override
     public void onBackPressed() {
-        if(mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+        if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
             mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }else{
+        } else {
             super.onBackPressed();
         }
     }

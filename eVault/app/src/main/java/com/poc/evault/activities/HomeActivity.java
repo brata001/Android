@@ -132,7 +132,7 @@ public class HomeActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        String name = "";
+        /*String name = "";
         String email = "";
         String photoUrl = "";
         Bundle bundle = getIntent().getExtras();
@@ -140,7 +140,7 @@ public class HomeActivity extends AppCompatActivity implements
             name = bundle.getString("NAME");
             email = bundle.getString("EMAIL");
             photoUrl = bundle.getString("URL");
-        }
+        }*/
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         arcMenu = (ArcMenu) findViewById(R.id.arcMenu);
@@ -148,11 +148,11 @@ public class HomeActivity extends AppCompatActivity implements
         ImageView imgSDCard = (ImageView) findViewById(R.id.sd_card);
         ImageView imgFamilyEmail = (ImageView) findViewById(R.id.family_email);
         ImageView imgLogout = (ImageView) findViewById(R.id.logout);
-        TextView txtName = (TextView) findViewById(R.id.name);
+        /*TextView txtName = (TextView) findViewById(R.id.name);
         txtName.setText(name);
         TextView txtEmail = (TextView) findViewById(R.id.email);
         txtEmail.setText(email);
-        CircleImageView imgUserPhoto = (CircleImageView) findViewById(R.id.user_photo);
+        CircleImageView imgUserPhoto = (CircleImageView) findViewById(R.id.user_photo);*/
 
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
@@ -164,8 +164,8 @@ public class HomeActivity extends AppCompatActivity implements
         documentDataSource.open();
         listItem= documentDataSource.getAllDocuments();
         documentDataSource.close();*/
-        updateList();
-       /* Item item = new Item();
+        /*listItem = new ArrayList<>();
+        Item item = new Item();
         item.setId(1l);
         item.setName("ABC.pdf");
         item.setUploadDate("April 4 2017");
@@ -180,7 +180,7 @@ public class HomeActivity extends AppCompatActivity implements
         item.setType("doc");
         listItem.add(item);
         item = new Item();
-        item.setId("3");
+        item.setId(32);
         item.setName("ffdfdsf.xlsx");
         item.setUploadDate("April 6 2017");
         item.setSize("1MB");
@@ -190,9 +190,9 @@ public class HomeActivity extends AppCompatActivity implements
         /*if(listItem.size()>0) {
             mRecyclerView.setAdapter(new DocListAdapter(listItem, this));
         }*/
-        DownloadImageTask task = new DownloadImageTask(imgUserPhoto);
-        task.execute(photoUrl);
-
+        /*DownloadImageTask task = new DownloadImageTask(imgUserPhoto);
+        task.execute(photoUrl);*/
+        updateList();
         imgCamera.setOnClickListener(this);
         imgSDCard.setOnClickListener(this);
         imgFamilyEmail.setOnClickListener(this);
